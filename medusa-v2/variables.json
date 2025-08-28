@@ -1,0 +1,174 @@
+{
+    "name": "medusa-monorepo-backend",
+    "type": "WEB",
+    "strategy": {
+        "type": "DEPLOYMENT_STRATEGY_TYPE_ROLLING"
+    },
+    "routes": [
+        {
+            "port": 9000,
+            "path": "/"
+        }
+    ],
+    "ports": [
+        {
+            "port": 9000,
+            "protocol": "http"
+        }
+    ],
+    "proxy_ports": [],
+    "env": [
+        {
+            "scopes": [
+                "region:fra"
+            ],
+            "key": "ADMIN_CORS",
+            "value": "http://localhost:7000"
+        },
+        {
+            "scopes": [
+                "region:fra"
+            ],
+            "key": "AUTH_CORS",
+            "value": "http://localhost:7000"
+        },
+        {
+            "scopes": [
+                "region:fra"
+            ],
+            "key": "COOKIE_SECRET",
+            "value": "supersecret"
+        },
+        {
+            "scopes": [
+                "region:fra"
+            ],
+            "key": "DATABASE_URL",
+            "value": "postgresql://neondb_owner:npg_IlzpY2tvq7fJ@ep-purple-wave-abrwzpb3-pooler.eu-west-2.aws.neon.tech/neondb?sslmode=require"
+        },
+        {
+            "scopes": [
+                "region:fra"
+            ],
+            "key": "JWT_SECRET",
+            "value": "supersecret"
+        },
+        {
+            "scopes": [
+                "region:fra"
+            ],
+            "key": "MEILISEARCH_API_KEY",
+            "value": "aB3+kL9/ZxY1mN0pQq7rTt8VsU4hWw2B"
+        },
+        {
+            "scopes": [
+                "region:fra"
+            ],
+            "key": "MEILISEARCH_HOST",
+            "value": "convinced-stormie-eurphil-webstore-89a804f0.koyeb.app/"
+        },
+        {
+            "scopes": [
+                "region:fra"
+            ],
+            "key": "R2_ACCESS_KEY_ID",
+            "value": "D_9q5ToZdQWjuMHMdb8HXKl3IDEcIfkpqQP855hd"
+        },
+        {
+            "scopes": [
+                "region:fra"
+            ],
+            "key": "R2_ACCOUNT_ID",
+            "value": "82a5e56f9348a3f4e581296729b3b74a"
+        },
+        {
+            "scopes": [
+                "region:fra"
+            ],
+            "key": "R2_BUCKET_NAME",
+            "value": "medusa-webstore"
+        },
+        {
+            "scopes": [
+                "region:fra"
+            ],
+            "key": "R2_SECRET_ACCESS_KEY",
+            "value": "ef75054870e49f8b30a72aa175771ed393cdf25d1b2703619dd4b56c692348be"
+        },
+        {
+            "scopes": [
+                "region:fra"
+            ],
+            "key": "REDIS_URL",
+            "value": "rediss://default:AXeaAAIncDFlNjllNWM4M2I4ZDU0NzU5YWIyMGNiZGI5NzE1NWU3YXAxMzA2MTg@promoted-boa-30618.upstash.io:6379"
+        },
+        {
+            "scopes": [
+                "region:fra"
+            ],
+            "key": "STORE_CORS",
+            "value": "http://localhost:8000"
+        }
+    ],
+    "regions": [
+        "fra"
+    ],
+    "scalings": [
+        {
+            "scopes": [
+                "region:fra"
+            ],
+            "min": 0,
+            "max": 1,
+            "targets": [
+                {
+                    "sleep_idle_delay": {
+                        "value": 0,
+                        "deep_sleep_value": 300,
+                        "light_sleep_value": 0
+                    }
+                }
+            ]
+        }
+    ],
+    "instance_types": [
+        {
+            "scopes": [
+                "region:fra"
+            ],
+            "type": "free"
+        }
+    ],
+    "health_checks": [
+        {
+            "grace_period": 5,
+            "interval": 30,
+            "restart_limit": 3,
+            "timeout": 5,
+            "http": {
+                "port": 9000,
+                "path": "/health",
+                "method": "GET",
+                "headers": []
+            }
+        }
+    ],
+    "volumes": [],
+    "config_files": [],
+    "skip_cache": false,
+    "git": {
+        "repository": "github.com/travis-wayne/medusa-monorepo",
+        "branch": "main",
+        "tag": "",
+        "sha": "",
+        "build_command": "",
+        "run_command": "",
+        "no_deploy_on_push": false,
+        "workdir": "./medusa-v2",
+        "buildpack": {
+            "build_command": "",
+            "run_command": "",
+            "privileged": false
+        }
+    }
+}
