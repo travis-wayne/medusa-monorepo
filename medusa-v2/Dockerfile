@@ -3,19 +3,48 @@ FROM node:20-alpine AS base
 WORKDIR /app
 RUN npm install -g pnpm
 
+# ---- Dependencies ----
+# Creates a lean node_modules with only production dependencies
+FROM base AS deps
+COPY package.json pnpm-lock.yaml* ./
+RUN pnpm install --frozen-lockfile --prod
+
 # ---- Builder ----
-# This stage builds the Medusa backend
+# Builds the entire application, including dev dependencies
 FROM base AS builder
+ARG DATABASE_URL=postgres://dummy:dummy@dummy:5432/dummy
+ARG REDIS_URL=redis://dummy
+ARG JWT_SECRET=dummy-jwt-secret
+ARG COOKIE_SECRET=dummy-cookie-secret
+ARG MEDUSA_ADMIN_BACKEND_URL=http://localhost:9000
+
+ENV DATABASE_URL=$DATABASE_URL
+ENV REDIS_URL=$REDIS_URL
+ENV JWT_SECRET=$JWT_SECRET
+ENV COOKIE_SECRET=$COOKIE_SECRET
+ENV MEDUSA_ADMIN_BACKEND_URL=$MEDUSA_ADMIN_BACKEND_URL
+
 COPY . .
 RUN pnpm install --frozen-lockfile
 RUN pnpm run build
 
-# ---- Production ----
-# This is the final, small image that will run in production
-FROM base as production
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
+# ---- Runner (Final Image) ----
+# Assembles the final, lean production image
+FROM base AS runner
+WORKDIR /app
+ENV NODE_ENV=production
 
-# The official start command from the documentation
-CMD ["node", "dist/main.js"]
+# Copy the lean, production-only dependencies
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copy the entire, self-contained build output from the correct folder
+COPY --from=builder /app/.medusa/server ./.medusa/server
+
+# Copy the package.json and config file needed for the start command
+COPY --from=builder /app/package.json .
+COPY --from=builder /app/medusa-config.ts .
+
+EXPOSE 9000
+
+# Use the start command that we know works with this build structure
+CMD ["pnpm", "start"]
