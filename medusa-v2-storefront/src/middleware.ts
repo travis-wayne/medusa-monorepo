@@ -14,39 +14,59 @@ async function getRegionMap(cacheId: string) {
   const { regionMap, regionMapUpdated } = regionMapCache
 
   if (!BACKEND_URL) {
-    throw new Error(
-      "Middleware.ts: Error fetching regions. Did you set up regions in your Medusa Admin and define a MEDUSA_BACKEND_URL environment variable? Note that the variable is no longer named NEXT_PUBLIC_MEDUSA_BACKEND_URL."
+    console.warn(
+      "Middleware.ts: MEDUSA_BACKEND_URL not set. Using fallback region."
     )
+    // Create a fallback region
+    const defaultRegion = {
+      id: 'fallback',
+      name: 'Fallback Region',
+      countries: [{ iso_2: DEFAULT_REGION, display_name: 'Default Country' }]
+    } as HttpTypes.StoreRegion
+    
+    regionMapCache.regionMap.set(DEFAULT_REGION, defaultRegion)
+    return regionMapCache.regionMap
   }
 
   if (
     !regionMap.keys().next().value ||
     regionMapUpdated < Date.now() - 3600 * 1000
   ) {
-    // Fetch regions from Medusa. We can't use the JS client here because middleware is running on Edge and the client needs a Node environment.
-    const { regions } = await fetch(`${BACKEND_URL}/store/regions`, {
-      headers: {
-        "x-publishable-api-key": PUBLISHABLE_API_KEY!,
-      },
-      next: {
-        revalidate: 3600,
-        tags: [`regions-${cacheId}`],
-      },
-      cache: "force-cache",
-    }).then(async (response) => {
-      const json = await response.json()
+    try {
+      // Fetch regions from Medusa. We can't use the JS client here because middleware is running on Edge and the client needs a Node environment.
+      const { regions } = await fetch(`${BACKEND_URL}/store/regions`, {
+        headers: {
+          "x-publishable-api-key": PUBLISHABLE_API_KEY!,
+        },
+        next: {
+          revalidate: 3600,
+          tags: [`regions-${cacheId}`],
+        },
+        cache: "force-cache",
+      }).then(async (response) => {
+        const json = await response.json()
 
-      if (!response.ok) {
-        throw new Error(json.message)
-      }
+        if (!response.ok) {
+          throw new Error(json.message || `HTTP ${response.status}`)
+        }
 
-      return json
-    })
+        return json
+      })
 
     if (!regions?.length) {
-      throw new Error(
-        "No regions found. Please set up regions in your Medusa Admin."
+      console.warn(
+        "No regions found. Please set up regions in your Medusa Admin. Using default region for now."
       )
+      // Create a default fallback region to prevent crashes
+      const defaultRegion = {
+        id: 'default',
+        name: 'Default Region',
+        countries: [{ iso_2: DEFAULT_REGION, display_name: 'Default Country' }]
+      } as HttpTypes.StoreRegion
+      
+      regionMapCache.regionMap.set(DEFAULT_REGION, defaultRegion)
+      regionMapCache.regionMapUpdated = Date.now()
+      return regionMapCache.regionMap
     }
 
     // Create a map of country codes to regions.
@@ -57,6 +77,21 @@ async function getRegionMap(cacheId: string) {
     })
 
     regionMapCache.regionMapUpdated = Date.now()
+    } catch (error) {
+      console.warn(
+        "Failed to fetch regions from backend. Using fallback region.",
+        error
+      )
+      // Create a fallback region in case of API errors
+      const fallbackRegion = {
+        id: 'fallback',
+        name: 'Fallback Region',
+        countries: [{ iso_2: DEFAULT_REGION, display_name: 'Default Country' }]
+      } as HttpTypes.StoreRegion
+      
+      regionMapCache.regionMap.set(DEFAULT_REGION, fallbackRegion)
+      regionMapCache.regionMapUpdated = Date.now()
+    }
   }
 
   return regionMapCache.regionMap
