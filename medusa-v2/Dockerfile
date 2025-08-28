@@ -40,7 +40,10 @@ COPY --from=builder /app/.medusa/server ./.medusa/server
 # Copy the package.json so we can use the 'start' script.
 COPY package.json .
 
+# CRITICAL FIX: The start command needs medusa-config.js in the root.
+COPY medusa-config.js .
+
 EXPOSE 9000
 
-# The correct and official way to start this server is using the package.json start script.
+# The official way to start this server is using the package.json start script.
 CMD ["pnpm", "start"]
