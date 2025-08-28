@@ -34,7 +34,7 @@ ENV NODE_ENV=production
 # Copy the production dependencies.
 COPY --from=deps /app/node_modules ./node_modules
 
-# Copy the entire, self-contained build output.
+# Copy the entire, self-contained build output to the location Medusa expects.
 COPY --from=builder /app/.medusa/server ./.medusa/server
 
 # Copy the package.json so we can use the 'start' script.
@@ -42,5 +42,5 @@ COPY package.json .
 
 EXPOSE 9000
 
-# The correct way to start this server is using the package.json start script.
+# The correct and official way to start this server is using the package.json start script.
 CMD ["pnpm", "start"]
