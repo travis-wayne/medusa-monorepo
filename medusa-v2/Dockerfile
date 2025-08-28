@@ -44,8 +44,12 @@ COPY --from=builder /app/.medusa/server ./.medusa/server
 COPY --from=builder /app/package.json .
 COPY --from=builder /app/medusa-config.ts .
 COPY --from=builder /app/tsconfig.json .
+COPY --from=builder /app/start.sh .
+
+# Make the start script executable
+RUN chmod +x start.sh
 
 EXPOSE 9000
 
-# Use the start command that we know works with this build structure
-CMD ["pnpm", "start"]
+# Use the startup script that handles migration and starting
+CMD ["./start.sh"]
