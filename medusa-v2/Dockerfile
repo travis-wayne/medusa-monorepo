@@ -37,11 +37,11 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy the entire, self-contained build output to the location Medusa expects.
 COPY --from=builder /app/.medusa/server ./.medusa/server
 
-# Copy the package.json so we can use the 'start' script.
-COPY package.json .
+# Copy the package.json FROM THE BUILDER STAGE so we can use the 'start' script.
+COPY --from=builder /app/package.json .
 
-# CRITICAL FIX: The start command needs medusa-config.js in the root.
-COPY medusa-config.js .
+# CRITICAL SYNTAX FIX: Copy the medusa-config.js FROM THE BUILDER STAGE.
+COPY --from=builder /app/medusa-config.js .
 
 EXPOSE 9000
 
