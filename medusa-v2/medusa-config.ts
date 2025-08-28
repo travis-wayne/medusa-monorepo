@@ -17,7 +17,7 @@ module.exports = defineConfig({
     }
   },
   admin: {
-    disable: false, // Temporarily enabled to create publishable key
+    disable: true, // Disabled for deployment
   },
   modules: [
     {
