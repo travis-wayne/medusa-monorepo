@@ -16,7 +16,7 @@ ARG DATABASE_URL=postgres://dummy:dummy@dummy:5432/dummy
 ARG REDIS_URL=redis://dummy
 ARG JWT_SECRET=dummy-jwt-secret
 ARG COOKIE_SECRET=dummy-cookie-secret
-ARG MEDUSA_ADMIN_BACKEND_URL=http://localhost:9000
+ARG MEDUSA_ADMIN_BACKEND_URL=https://motionless-cris-euphil-foods-66a09b91.koyeb.app
 
 ENV DATABASE_URL=$DATABASE_URL
 ENV REDIS_URL=$REDIS_URL
