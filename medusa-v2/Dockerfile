@@ -1,49 +1,35 @@
-# ---- Base Node.js Image ----
-FROM node:20-alpine AS base
-WORKDIR /app
+# ---- The Final, Single-Stage Dockerfile ----
+# This is not optimized for size, but it is optimized for SUCCESS.
+
+# Use a specific Node.js version
+FROM node:20-alpine
+
+# Install pnpm
 RUN npm install -g pnpm
 
-# ---- Dependencies ----
-FROM base AS deps
-COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile --prod
+# Set the working directory
+WORKDIR /app
 
-# ---- Builder ----
-FROM base AS builder
-ARG DATABASE_URL=postgres://dummy:dummy@dummy:5432/dummy
-ARG REDIS_URL=redis://dummy
-ARG JWT_SECRET=dummy-jwt-secret
-ARG COOKIE_SECRET=dummy-cookie-secret
-ARG MEDUSA_ADMIN_BACKEND_URL=http://localhost:9000
-
-ENV DATABASE_URL=$DATABASE_URL
-ENV REDIS_URL=$REDIS_URL
-ENV JWT_SECRET=$JWT_SECRET
-ENV COOKIE_SECRET=$COOKIE_SECRET
-ENV MEDUSA_ADMIN_BACKEND_URL=$MEDUSA_ADMIN_BACKEND_URL
-
+# Copy all the project files
 COPY . .
+
+# Install ALL dependencies
 RUN pnpm install --frozen-lockfile
+
+# Provide the backend URL for the admin build
+# NOTE: We need to hardcode your Koyeb URL here.
+# After this backend is deployed, Koyeb will give you a NEW URL.
+# You will have to come back and replace the URL below with that NEW URL and redeploy one last time.
+ENV MEDUSA_ADMIN_BACKEND_URL=https://<YOUR_KOYEB_APP_NAME>.koyeb.app
+
+# Build the project. We don't need dummy variables as everything is installed.
 RUN pnpm build
 
-# ---- Runner (Final Image) ----
-FROM base AS runner
-WORKDIR /app
-ENV NODE_ENV=production
+# Set the final working directory to the built server
+WORKDIR /app/.medusa/server
 
-# Copy the production dependencies.
-COPY --from=deps /app/node_modules ./node_modules
-
-# Copy the entire, self-contained build output to the location Medusa expects.
-COPY --from=builder /app/.medusa/server ./.medusa/server
-
-# Copy the package.json so we can use the 'start' script.
-COPY --from=builder /app/package.json .
-
-# CRITICAL FILENAME FIX: The new project uses medusa-config.ts
-COPY --from=builder /app/medusa-config.ts .
-
+# Expose the port
 EXPOSE 9000
 
-# The official way to start this server is using the package.json start script.
-CMD ["pnpm", "start"]
+# The command to start the server, from within the built directory
+CMD ["medusa", "start"]
