@@ -40,9 +40,10 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy the entire, self-contained build output from the correct folder
 COPY --from=builder /app/.medusa/server ./.medusa/server
 
-# Copy the package.json and config file needed for the start command
+# Copy the package.json, tsconfig, and config file needed for the start command
 COPY --from=builder /app/package.json .
 COPY --from=builder /app/medusa-config.ts .
+COPY --from=builder /app/tsconfig.json .
 
 EXPOSE 9000
 
