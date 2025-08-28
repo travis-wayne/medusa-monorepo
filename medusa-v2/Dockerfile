@@ -14,7 +14,6 @@ ARG DATABASE_URL=postgres://dummy:dummy@dummy:5432/dummy
 ARG REDIS_URL=redis://dummy
 ARG JWT_SECRET=dummy-jwt-secret
 ARG COOKIE_SECRET=dummy-cookie-secret
-# We use a placeholder for the first build, then update it with the real URL.
 ARG MEDUSA_ADMIN_BACKEND_URL=http://localhost:9000
 
 ENV DATABASE_URL=$DATABASE_URL
@@ -32,8 +31,8 @@ FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=deps /app/node_modules ./node_modules
-# The new official template outputs to a `dist` folder.
-COPY --from=builder /app/dist ./dist
+# CORRECTED: Copy from the actual build output directory.
+COPY --from=builder /app/.medusa/server ./dist
 COPY package.json .
 
 EXPOSE 9000
