@@ -26,17 +26,21 @@ COPY . .
 RUN pnpm install --frozen-lockfile
 RUN pnpm build
 
-# --- DEBUGGING STEP ---
-# List all files and folders inside the build output directory.
-RUN ls -laR .medusa/server
-
 # ---- Runner (Final Image) ----
 FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+
+# Copy the production dependencies.
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=builder /app/.medusa/server ./dist
+
+# Copy the entire, self-contained build output.
+COPY --from=builder /app/.medusa/server ./.medusa/server
+
+# Copy the package.json so we can use the 'start' script.
 COPY package.json .
 
 EXPOSE 9000
-CMD ["node", "dist/index.js"]
+
+# The correct way to start this server is using the package.json start script.
+CMD ["pnpm", "start"]
