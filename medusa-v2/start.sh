@@ -8,5 +8,8 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+echo "Creating publishable API key..."
+pnpm medusa exec ./src/scripts/seed-api-key.ts
+
 echo "Starting Medusa application..."
 pnpm start
