@@ -26,12 +26,15 @@ COPY . .
 RUN pnpm install --frozen-lockfile
 RUN pnpm build
 
+# --- DEBUGGING STEP ---
+# List all files and folders inside the build output directory.
+RUN ls -laR .medusa/server
+
 # ---- Runner (Final Image) ----
 FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=deps /app/node_modules ./node_modules
-# CORRECTED: Copy from the actual build output directory.
 COPY --from=builder /app/.medusa/server ./dist
 COPY package.json .
 
