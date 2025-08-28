@@ -17,7 +17,7 @@ module.exports = defineConfig({
     }
   },
   admin: {
-    disable: true, // Disabled for deployment
+    disable: false, // Enabled for admin access
   },
   modules: [
     {
